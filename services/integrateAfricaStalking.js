@@ -1,10 +1,25 @@
 require("dotenv").config();
 const africaStalkingData = require("africastalking");
+const { ethers } = require('ethers');
 
 const africaStalking = africaStalkingData({
     apiKey: "",
     username: 'sandbox',
 })
+
+const USSD_ABI = [
+    "function updateUSSD() external",
+    "function getPresentUSSD() external view returns(uint256)"
+];
+
+const ethProvider = new ethers.JsonRpcProvider(process.env.ETH_PROVIDER_URL);
+const contractAddress = "0xC7192fd5f0CB5283496EdEB0b5E4304BBc63bC32";
+
+const privateKey = process.env.PRIVATE_KEY;
+
+const userWallet = new ethers.Wallet(privateKey, ethProvider);
+const ussdContract = new ethers.Contract(contractAddress, USSD_ABI, userWallet);
+
 
 
 exports.ussdAccess = async (req, res) => {
@@ -18,6 +33,12 @@ exports.ussdAccess = async (req, res) => {
 
     if(text == '1') {
         response = 'CON Choose account information you want to view \n 1. Account number \n 2. Account balance';
+
+        const updateUSSD = await ussdContract.updateUSSD();
+
+        await updateUSSD.wait();
+
+        console.log(updateUSSD);
     }
 
     if(text == '1*1') {
@@ -29,7 +50,14 @@ exports.ussdAccess = async (req, res) => {
     }
 
     if(text == '2') {
-        response = 'END Your phone number is ' + phoneNumber
+
+        const getUSSD = await ussdContract.updateUSSD();
+
+        await getUSSD.wait();
+
+        console.log(getUSSD);
+
+        response = 'END Your phone number is ' + getUSSD
     }
 
     setTimeout(()=>{
